@@ -1,0 +1,5 @@
+dist/*.spec.js
+.nyc_output/
+coverage/
+.prettierrc
+jasmine.json
