@@ -33,7 +33,7 @@ export class Injector {
       return this.fromProvider(token) as T;
     }
 
-    throw new ReferenceError('Unable to find value for ' + getInjectableName(token));
+    throw new ReferenceError('Injector could not find a value for ' + getInjectableName(token));
   }
 
   canProvide<T>(token: InjectableType<T>): boolean {

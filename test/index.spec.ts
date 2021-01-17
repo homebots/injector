@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable } from './index';
+import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable } from '../src';
 
 describe('Injector', () => {
   it('should throw an error', () => {
@@ -186,8 +186,8 @@ describe('@Inject()', () => {
     INJECTOR.provide(Test);
 
     const instance = INJECTOR.get(Test);
-    expect(() => instance.color).toThrowError('Unable to find value for ' + String(Color));
-    expect(() => instance.dependency).toThrowError('Unable to find value for class Dependency');
+    expect(() => instance.color).toThrowError('Injector could not find a value for ' + String(Color));
+    expect(() => instance.dependency).toThrowError('Injector could not find a value for class Dependency');
   });
 });
 

@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "description": "Dependency Injection library in Typescript",
   "main": "dist/index.js",
+  "typings": "./dist/index.d.ts",
   "scripts": {
+    "clean": "rm -rf dist/",
     "test": "./node_modules/.bin/ts-node -P ./tsconfig.spec.json -- ./node_modules/jasmine/bin/jasmine --config=./jasmine.json",
-    "tdd": "./node_modules/.bin/nodemon -w src -e ts -x './node_modules/.bin/ts-node -P ./tsconfig.spec.json -- ./node_modules/jasmine/bin/jasmine --config=./jasmine.json'",
+    "tdd": "./node_modules/.bin/nodemon -w src -w test -e ts -x './node_modules/.bin/ts-node -P ./tsconfig.spec.json -- ./node_modules/jasmine/bin/jasmine --config=./jasmine.json'",
     "coverage": "./node_modules/.bin/nyc -r html -e .ts -x \"src/*.spec.ts\" npm run test",
-    "build": "tsc --project ./tsconfig.json"
+    "build": "npm run clean && tsc --project ./tsconfig.json"
   },
   "keywords": [
     "homebots"

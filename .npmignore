@@ -1,5 +1,5 @@
-dist/*.spec.js
-.nyc_output/
+test/
 coverage/
+.nyc_output/
 .prettierrc
 jasmine.json
