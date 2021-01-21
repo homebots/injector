@@ -1,12 +1,16 @@
-export { createInjection, getTypeOfProperty, Inject, Injectable } from './decorators';
 export {
-  Type,
+  Class,
+  AbstractClass,
+  Provider,
+  ClassProvider,
+  AbstractClassProvider,
+  SymbolClassProvider,
   FactoryProvider,
+  Type,
   InjectableType,
-  INJECTOR,
-  Injector,
-  TreeInjector,
   isConstructor,
-  getInjectorOf,
-  setInjectorOf,
-} from './injector';
+  isFactory,
+} from './types';
+
+export { createInjection, getTypeOfProperty, Inject, Injectable } from './decorators';
+export { INJECTOR, Injector, TreeInjector, getInjectorOf, setInjectorOf } from './injector';

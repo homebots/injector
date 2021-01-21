@@ -109,3 +109,51 @@ expect(electricCar.engine instanceof ElectricMotor).toBe(true);
 expect(gasolineCar.engine instanceof GasolineEngine).toBe(true);
 expect(electricCar.color).toBe('black');
 ```
+
+## API
+
+### Injector
+
+**get(token)**
+
+Retrieves a value for a given injectable token. The token can be either a `Class` or a `Symbol`.
+
+**has(token)**
+
+Check if the injector has a value stored for a given token. Returns false before the first time the token is retrieved, true otherwise.
+
+**canProvide(token)**
+
+Checks if a token can be provided by this injector. It differs from `has()` because it just checks for the possibility of an injection.
+
+**provide(Class)**
+**provide(Class, SubstitutionClass)**
+**provide(AbstractClass, Class)**
+**provide(Symbol, Class)**
+**provide(Symbol, factory)**
+
+Declares an injectable type.
+
+`factory` is an object which needs to have a property, called "factory", that when called returns a value for a token.
+The factory function can inject other dependencies, declared in the same object with the name "dependencies", which should be an array containing Class or Symbol.
+
+Example:
+
+```typescript
+class A {}
+class B {}
+const C = Symbol();
+
+injector.provide(symbol, {
+  factory: (a: A, b: B, c: any) => c,
+  dependencies: [A, B, C],
+});
+```
+
+### TreeInjector
+
+**fork()**
+**fork(Injector)**
+
+Creates a new injector that can hold its own provided dependencies. If a provider is not found, it will look at its parent for dependencies.
+A parent can be provided at construction time. By default it points to the root injector.

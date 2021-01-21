@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable } from '../src';
+import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable } from './index';
 
 describe('Injector', () => {
   it('should throw an error', () => {
@@ -11,6 +11,7 @@ describe('Injector', () => {
     INJECTOR.provide(Class);
 
     expect(INJECTOR.get(Class) instanceof Class).toBe(true);
+    expect(INJECTOR.has(Class)).toBe(true);
     expect(INJECTOR.canProvide(Class)).toBe(true);
   });
 
@@ -20,7 +21,8 @@ describe('Injector', () => {
     INJECTOR.provide(Class, AssociatedClass);
 
     expect(INJECTOR.get(Class) instanceof AssociatedClass).toBe(true);
-    expect(INJECTOR.canProvide(Class)).toBe(true);
+    expect(INJECTOR.has(Class)).toBe(true);
+    expect(INJECTOR.has(AssociatedClass)).toBe(false);
   });
 
   it('should use the concrete type associated with a symbol', () => {
@@ -30,8 +32,8 @@ describe('Injector', () => {
 
     INJECTOR.provide(abstractType, Class);
     expect(INJECTOR.get(abstractType) instanceof Class).toBe(true);
-    expect(INJECTOR.canProvide(abstractType)).toBe(true);
-    expect(INJECTOR.canProvide(typeNotProvided)).toBe(false);
+    expect(INJECTOR.has(abstractType)).toBe(true);
+    expect(INJECTOR.has(typeNotProvided)).toBe(false);
   });
 
   it('should use the factory function associated with a symbol', () => {
@@ -63,6 +65,28 @@ describe('Injector', () => {
     INJECTOR.provide(Class);
     expect(INJECTOR.get(abstractType)).toBe(15);
   });
+
+  it('should prevent cyclic dependencies', () => {
+    const alice = Symbol('alice');
+    const bob = Symbol('bob');
+
+    INJECTOR.provide(alice, {
+      factory(bob) {
+        return bob;
+      },
+      dependencies: [bob],
+    });
+
+    INJECTOR.provide(bob, {
+      factory(alice) {
+        return alice;
+      },
+
+      dependencies: [alice],
+    });
+
+    expect(() => INJECTOR.get(alice)).toThrowError('Cyclic dependency found: ' + String(alice) + ' <- ' + String(bob));
+  });
 });
 
 describe('TreeInjector', () => {
@@ -73,6 +97,7 @@ describe('TreeInjector', () => {
     const injector = new TreeInjector();
 
     expect(INJECTOR.get(Class) === injector.get(Class)).toBe(true);
+    expect();
   });
 
   it('should follow a chain of injectors', () => {
@@ -81,12 +106,17 @@ describe('TreeInjector', () => {
 
     const level1 = new TreeInjector();
     const level2 = level1.fork();
-    const level3 = level2.fork();
 
-    expect(level3.get(Class) === INJECTOR.get(Class)).toBe(true);
+    expect(level1.canProvide(Class)).toBe(true);
+    expect(level2.canProvide(Class)).toBe(true);
+
+    expect(level1.has(Class)).toBe(false);
+    expect(level2.has(Class)).toBe(false);
+
+    expect(level2.get(Class) === INJECTOR.get(Class)).toBe(true);
   });
 
-  it('should associate injectors and constructors correctly', () => {
+  it('should associate a injector that provides a class to its instance', () => {
     class Class1 {}
     class Class2 {}
     class Class3 {}
@@ -115,7 +145,12 @@ describe('TreeInjector', () => {
 
     injector.provide(Class);
     fork.provide(Class);
+
+    expect(injector.has(Class)).toBe(false);
+    expect(injector.get(Class)).not.toBe(undefined);
     expect(injector.get(Class) === fork.get(Class)).toBe(false);
+    expect(injector.canProvide(Class)).toBe(true);
+    expect(fork.canProvide(Class)).toBe(true);
   });
 });
 
@@ -188,6 +223,17 @@ describe('@Inject()', () => {
     const instance = INJECTOR.get(Test);
     expect(() => instance.color).toThrowError('Injector could not find a value for ' + String(Color));
     expect(() => instance.dependency).toThrowError('Injector could not find a value for class Dependency');
+  });
+
+  it('should throw an error if a dependency type is invalid', () => {
+    class Test {
+      @Inject() test: never;
+    }
+
+    INJECTOR.provide(Test);
+
+    const instance = INJECTOR.get(Test);
+    expect(() => instance.test).toThrowError('No type found for property test');
   });
 });
 
