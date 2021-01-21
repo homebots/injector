@@ -15,14 +15,14 @@ There are two ways of using injections:
 
 First you create a class:
 
-```
+```typescript
 class ElectricCar {}
 ```
 
 That class can have one or more dependencies.
 You can declare them with a decorator:
 
-```
+```typescript
 class Battery {}
 class Motor {}
 
@@ -35,7 +35,7 @@ class ElectricCar {
 But sometimes you don't have a concrete value just yet, or the value is not an object. You just want to have a placeholder.
 You can do that using a `Symbol`:
 
-```
+```typescript
 export CarColor = Symbol('color')
 export class ElectricCar {
   @Inject(CarColor) color: string;
@@ -45,16 +45,16 @@ export class ElectricCar {
 But who is gonna provide the `CarColor`, you may ask?
 Well, you can declare a provider for it:
 
-```
-import {INJECTOR} from '@homebots/injector';
+```typescript
+import { INJECTOR } from '@homebots/injector';
 
 INJECTOR.provide(CarColor, { factory: () => 'blue' });
 ```
 
 You can also replace the implementation of classes:
 
-```
-import {INJECTOR} from '@homebots/injector';
+```typescript
+import { INJECTOR } from '@homebots/injector';
 
 class Motor {}
 class ElectricMotor {}
@@ -65,7 +65,6 @@ class Car {
   // 'motor' will have an instance of ElectricMotor
   @Inject(Motor) motor: Motor;
 }
-
 ```
 
 ## Examples
@@ -114,23 +113,23 @@ expect(electricCar.color).toBe('black');
 
 ### Injector
 
-**get(token)**
+- **get(token)**
 
 Retrieves a value for a given injectable token. The token can be either a `Class` or a `Symbol`.
 
-**has(token)**
+- **has(token)**
 
 Check if the injector has a value stored for a given token. Returns false before the first time the token is retrieved, true otherwise.
 
-**canProvide(token)**
+- **canProvide(token)**
 
 Checks if a token can be provided by this injector. It differs from `has()` because it just checks for the possibility of an injection.
 
-**provide(Class)**
-**provide(Class, SubstitutionClass)**
-**provide(AbstractClass, Class)**
-**provide(Symbol, Class)**
-**provide(Symbol, factory)**
+- **provide(Class)**
+- **provide(Class, SubstitutionClass)**
+- **provide(AbstractClass, Class)**
+- **provide(Symbol, Class)**
+- **provide(Symbol, factory)**
 
 Declares an injectable type.
 
@@ -152,8 +151,8 @@ injector.provide(symbol, {
 
 ### TreeInjector
 
-**fork()**
-**fork(Injector)**
+- **fork()**
+- **fork(Injector)**
 
 Creates a new injector that can hold its own provided dependencies. If a provider is not found, it will look at its parent for dependencies.
 A parent can be provided at construction time. By default it points to the root injector.
