@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable } from './index';
+import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable, Provider, InjectionToken } from './index';
 
 describe('Injector', () => {
   it('should throw an error', () => {
@@ -25,9 +25,9 @@ describe('Injector', () => {
     expect(INJECTOR.has(AssociatedClass)).toBe(false);
   });
 
-  it('should use the concrete type associated with a symbol', () => {
-    const abstractType = Symbol();
-    const typeNotProvided = Symbol();
+  it('should use the concrete type associated with an InjectionToken', () => {
+    const abstractType = new InjectionToken();
+    const typeNotProvided = new InjectionToken();
     class Class {}
 
     INJECTOR.provide(abstractType, Class);
@@ -36,8 +36,8 @@ describe('Injector', () => {
     expect(INJECTOR.has(typeNotProvided)).toBe(false);
   });
 
-  it('should use the factory function associated with a symbol', () => {
-    const abstractType = Symbol();
+  it('should use the factory function associated with an InjectionToken', () => {
+    const abstractType = new InjectionToken();
     const numberFactory = {
       factory() {
         return 5;
@@ -48,8 +48,8 @@ describe('Injector', () => {
     expect(INJECTOR.get(abstractType)).toBe(5);
   });
 
-  it('should give the factory function associated with a symbol its dependencies', () => {
-    const abstractType = Symbol();
+  it('should give the factory function associated with an InjectionToken its dependencies', () => {
+    const abstractType = new InjectionToken();
     class Class {
       value = 10;
     }
@@ -67,8 +67,8 @@ describe('Injector', () => {
   });
 
   it('should prevent cyclic dependencies', () => {
-    const alice = Symbol('alice');
-    const bob = Symbol('bob');
+    const alice = new InjectionToken('alice');
+    const bob = new InjectionToken('bob');
 
     INJECTOR.provide(alice, {
       factory(bob) {
@@ -86,6 +86,29 @@ describe('Injector', () => {
     });
 
     expect(() => INJECTOR.get(alice)).toThrowError('Cyclic dependency found: ' + String(alice) + ' <- ' + String(bob));
+  });
+
+  it('should allow multiple provider declarations', () => {
+    class Class {}
+    class Surrogate {}
+    abstract class AbstractClass {}
+    const Token = new InjectionToken('token');
+    const NumberToken = new InjectionToken('number');
+    const numberFactory = { factory: () => 123 };
+
+    const providers: Provider[] = [
+      { type: Class, use: Surrogate },
+      { type: AbstractClass, use: Class },
+      { type: Token, use: Class },
+      { type: NumberToken, useFactory: numberFactory },
+    ];
+
+    INJECTOR.provideAll(providers);
+
+    expect(INJECTOR.canProvide(Class)).toBe(true);
+    expect(INJECTOR.canProvide(AbstractClass)).toBe(true);
+    expect(INJECTOR.canProvide(Token)).toBe(true);
+    expect(INJECTOR.canProvide(NumberToken)).toBe(true);
   });
 });
 
@@ -174,7 +197,7 @@ describe('@Inject()', () => {
     const injector = new TreeInjector();
     const fork = injector.fork();
 
-    const Color = Symbol('color');
+    const Color = new InjectionToken('color');
     class Battery {}
     class Engine {}
 
@@ -211,7 +234,7 @@ describe('@Inject()', () => {
   });
 
   it('should throw an error if a dependency cannot be provided', () => {
-    const Color = Symbol('color');
+    const Color = new InjectionToken('color');
     class Dependency {}
     class Test {
       @Inject(Color) color: string;
@@ -247,7 +270,7 @@ describe('@Injectable', () => {
 
 describe('Documentation example', () => {
   it('should inject dependencies correctly', () => {
-    const Color = Symbol('color');
+    const Color = new InjectionToken('color');
     class Battery {}
     class Engine {}
 

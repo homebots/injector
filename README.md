@@ -33,10 +33,10 @@ class ElectricCar {
 ```
 
 But sometimes you don't have a concrete value just yet, or the value is not an object. You just want to have a placeholder.
-You can do that using a `Symbol`:
+You can do that using an `InjectionToken`:
 
 ```typescript
-export CarColor = Symbol('color')
+export CarColor = new InjectionToken('color')
 export class ElectricCar {
   @Inject(CarColor) color: string;
 }
@@ -72,7 +72,7 @@ class Car {
 ```typescript
 import { Injector } from '@homebots/injector';
 
-const Color = Symbol('color');
+const Color = new InjectionToken('color');
 class Battery {}
 class Engine {}
 
@@ -115,7 +115,7 @@ expect(electricCar.color).toBe('black');
 
 - **get(token)**
 
-Retrieves a value for a given injectable token. The token can be either a `Class` or a `Symbol`.
+Retrieves a value for a given injectable token. The token can be either a `Class` or a `InjectionToken`.
 
 - **has(token)**
 
@@ -128,23 +128,26 @@ Checks if a token can be provided by this injector. It differs from `has()` beca
 - **provide(Class)**
 - **provide(Class, SubstitutionClass)**
 - **provide(AbstractClass, Class)**
-- **provide(Symbol, Class)**
-- **provide(Symbol, factory)**
+- **provide(InjectionToken, Class)**
+- **provide(InjectionToken, factory)**
 
 Declares an injectable type.
 
 `factory` is an object which needs to have a property, called "factory", that when called returns a value for a token.
-The factory function can inject other dependencies, declared in the same object with the name "dependencies", which should be an array containing Class or Symbol.
+The factory function can inject other dependencies, declared in the same object with the name "dependencies", which should be an array containing Class or InjectionToken.
 
 Example:
 
 ```typescript
 class A {}
 class B {}
-const C = Symbol();
+const C = new InjectionToken();
+const T = new InjectionToken();
 
-injector.provide(symbol, {
-  factory: (a: A, b: B, c: any) => c,
+injector.provide(C, { factory: () => 1 });
+
+injector.provide(T, {
+  factory: (a: A, b: B, c: number) => c,
   dependencies: [A, B, C],
 });
 ```

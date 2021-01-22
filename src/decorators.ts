@@ -4,7 +4,7 @@ import { getInjectorOf, INJECTOR } from './injector';
 import { Class, InjectableType, Type } from './types';
 
 export function getTypeOfProperty(target: any, property: any) {
-  return Reflect.getMetadata('design:type', target, property as string | symbol);
+  return Reflect.getMetadata('design:type', target, property);
 }
 
 export function createInjection<T>(target: any, property: any, type: InjectableType<T>) {

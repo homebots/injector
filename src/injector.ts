@@ -1,6 +1,15 @@
 /// <reference types="reflect-metadata" />
 
-import { AbstractClass, Class, Factory, InjectableType, isConstructor, Type } from './types';
+import {
+  AbstractClass,
+  Class,
+  Factory,
+  InjectableType,
+  InjectionToken,
+  isConstructor,
+  isFactoryProvider,
+  Provider,
+} from './types';
 
 const injectorMetadataKey = Symbol('injector');
 const cycleStack: any = [];
@@ -23,16 +32,26 @@ export class Injector {
 
   provide<T>(type: Class<T>): void;
   provide<T>(type: Class<T>, replaceWith: Class<T>): void;
+  provide<T>(type: Class<T>, provideWith: Factory<T>): void;
   provide<T>(type: AbstractClass<T>, replaceWith: Class<T>): void;
-  provide<T>(type: symbol, replaceWith: Class<T>): void;
-  provide<T>(type: symbol, factory: Factory<T>): void;
-  provide<T>(...args: any[]): this {
-    const type: Type<T> = args[0];
-    const replaceWith: Class<T> = args[1] || args[0];
+  provide<T>(type: InjectionToken<T>, provideAs: Class<T>): void;
+  provide<T>(type: InjectionToken<T>, useFactory: Factory<T>): void;
+  provide<T>(type: any, value?: Class<T> | Factory<T>): this {
+    const replaceWith = (value || type) as Class<T> | Factory<T>;
 
     this.providers.set(type, replaceWith);
 
     return this;
+  }
+
+  provideAll(providers: Provider[]) {
+    providers.forEach((provider) => {
+      if (isFactoryProvider(provider)) {
+        return this.provide(provider.type, provider.useFactory);
+      }
+
+      this.provide(provider.type as any, provider.use);
+    });
   }
 
   protected getFromCache<T>(token: InjectableType<T>) {

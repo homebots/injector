@@ -4,10 +4,11 @@ export {
   Provider,
   ClassProvider,
   AbstractClassProvider,
-  SymbolClassProvider,
+  TokenProvider,
   FactoryProvider,
   Type,
   InjectableType,
+  InjectionToken,
   isConstructor,
   isFactory,
 } from './types';
