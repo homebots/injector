@@ -1,9 +1,25 @@
 import 'reflect-metadata';
-import { getInjectorOf, Inject, Injectable, InjectionToken, INJECTOR, Provider, TreeInjector } from './index';
-import { Factory, setInjectorOf, Value } from './injector';
+import {
+  createInjection,
+  Factory,
+  getInjectorOf,
+  getTypeOfProperty,
+  Inject,
+  Injectable,
+  InjectionToken,
+  INJECTOR,
+  isConstructor,
+  isFactory,
+  Provider,
+  setInjectorOf,
+  TreeInjector,
+  Injector,
+  Value,
+} from './index';
 
 describe('Injector', () => {
   it('should throw an error', () => {
+    expect(INJECTOR instanceof Injector).toBe(true);
     expect(() => INJECTOR.get(null)).toThrow();
   });
 
@@ -212,6 +228,7 @@ describe('Factory()', () => {
 
     expect(typeof factory).toBe('object');
     expect(factory.factory()).toBe(123);
+    expect(isFactory(factory)).toBe(true);
   });
 
   it('should create a factory with dependencies', () => {
@@ -349,5 +366,33 @@ describe('Documentation example', () => {
     expect(electricCar.engine instanceof ElectricMotor).toBe(true);
     expect(gasolineCar.engine instanceof GasolineEngine).toBe(true);
     expect(electricCar.color).toBe('black');
+  });
+});
+
+describe('createInjection()', () => {
+  it('should create a property in a class that injects a value', () => {
+    class Class {}
+    class Dependency {}
+    createInjection(Class.prototype, 'foo', Dependency);
+
+    INJECTOR.provide(Class);
+    INJECTOR.provide(Dependency);
+
+    const instance: any = INJECTOR.get(Class);
+    expect(instance.foo instanceof Dependency).toBe(true);
+  });
+});
+
+describe('getTypeOfProperty()', () => {
+  it('should retrieve type information of a property in a class', () => {
+    class Dependency {}
+    class Class {
+      @Inject() dep: Dependency;
+    }
+
+    const type = getTypeOfProperty(Class.prototype, 'dep');
+
+    expect(type).toBe(Dependency);
+    expect(isConstructor(type)).toBe(true);
   });
 });
