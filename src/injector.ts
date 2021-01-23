@@ -149,6 +149,14 @@ export function setInjectorOf(target: any, injector: Injector): void {
   Reflect.defineMetadata(injectorMetadataKey, injector, target);
 }
 
+export function Factory<T>(factory: (...deps: any[]) => T, dependencies?: InjectableType[]): Factory<T> {
+  return { factory: factory, dependencies };
+}
+
+export function Value<T>(value: T): Factory<T> {
+  return { factory: () => value };
+}
+
 function getNameOfInjectable(token: InjectableType) {
   if (isConstructor(token)) {
     return 'class ' + token.name;

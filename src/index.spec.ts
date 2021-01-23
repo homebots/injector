@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import { getInjectorOf, Inject, INJECTOR, TreeInjector, Injectable, Provider, InjectionToken } from './index';
+import { getInjectorOf, Inject, Injectable, InjectionToken, INJECTOR, Provider, TreeInjector } from './index';
+import { Factory, setInjectorOf, Value } from './injector';
 
 describe('Injector', () => {
   it('should throw an error', () => {
@@ -189,6 +190,49 @@ describe('getInjectorOf()', () => {
   it('should return null', () => {
     expect(getInjectorOf({})).toBe(null);
     expect(getInjectorOf(null)).toBe(null);
+  });
+});
+
+describe('setInjectorOf()', () => {
+  it('should set the injector of an instance', () => {
+    class Class {}
+    const treeInjector = new TreeInjector();
+
+    INJECTOR.provide(Class);
+    const instance = INJECTOR.get(Class);
+    setInjectorOf(instance, treeInjector);
+
+    expect(getInjectorOf(instance)).toBe(treeInjector);
+  });
+});
+
+describe('Factory()', () => {
+  it('should create an object that represents a factory', () => {
+    const factory = Factory(() => 123);
+
+    expect(typeof factory).toBe('object');
+    expect(factory.factory()).toBe(123);
+  });
+
+  it('should create a factory with dependencies', () => {
+    class A {
+      value = 123;
+    }
+
+    const factory = Factory((a: A) => a.value, [A]);
+    const a = new A();
+
+    expect(typeof factory).toBe('object');
+    expect(factory.factory(a)).toBe(123);
+  });
+});
+
+describe('Value()', () => {
+  it('should create a value factory', () => {
+    const factory = Value(123);
+
+    expect(typeof factory).toBe('object');
+    expect(factory.factory()).toBe(123);
   });
 });
 

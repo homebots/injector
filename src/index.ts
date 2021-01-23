@@ -14,4 +14,4 @@ export {
 } from './types';
 
 export { createInjection, getTypeOfProperty, Inject, Injectable } from './decorators';
-export { INJECTOR, Injector, TreeInjector, getInjectorOf, setInjectorOf } from './injector';
+export { INJECTOR, Injector, TreeInjector, Value, Factory, getInjectorOf, setInjectorOf } from './injector';
