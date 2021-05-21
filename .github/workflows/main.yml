@@ -9,8 +9,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # - name: Install dependencies and build, if needed
-      #   run: npm ci && npm run build
+      - name: Build
+        run: npm ci && npm run build && npm run test
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2.5.0
         env:
