@@ -164,3 +164,9 @@ function getNameOfInjectable(token: InjectableType) {
 
   return String(token);
 }
+
+export function inject<T>(token: InjectableType<T>): T | null {
+  return INJECTOR.get(token);
+}
+
+export const provide = INJECTOR.provide.bind(INJECTOR) as Injector['provide'];

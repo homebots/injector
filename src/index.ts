@@ -13,5 +13,16 @@ export {
   isFactory,
 } from './types';
 
+export {
+  INJECTOR,
+  Injector,
+  TreeInjector,
+  Value,
+  Factory,
+  getInjectorOf,
+  setInjectorOf,
+  inject,
+  provide,
+} from './injector';
+
 export { createInjection, getTypeOfProperty, Inject, Injectable } from './decorators';
-export { INJECTOR, Injector, TreeInjector, Value, Factory, getInjectorOf, setInjectorOf } from './injector';

@@ -1,17 +1,21 @@
 # @homebots/injector
 
-Depedency Injection library in Typescript
+Depedency Injection library for any project, written in Typescript
+
+## Introduction
+
+The library exports a "global" injector, which can be used as-is to inject everything. It's called `INJECTOR`. You can pair that with the "inject" function exported in the library.
+
+But if you need to nest injectors and have a tree of dependencies, use `TreeInjector` instead.
 
 ## How it works
 
 There are two ways of using injections:
 
-- using a single, global injector. The library exports `INJECTOR`, a singleton object that can be accessed from anywhere and used as the injector of an entire app.
+- using a global injector: the library exports `INJECTOR`, a singleton object that can be accessed from anywhere and used as the injector of an entire app.
 
 - using a tree of injector with the ability to override classes/tokens on each level.
-  The library exports a class, `TreeInjector`, which can be instantiated as a starting point, and forked as needed to create children. See documentation for more details.
-
-## Usage
+  The library exports a class, `TreeInjector`, which can be instantiated as a starting point, and forked as needed to create children. See documentation below for more details.
 
 First you create a class:
 
@@ -32,23 +36,34 @@ class ElectricCar {
 }
 ```
 
-But sometimes you don't have a concrete value just yet, or the value is not an object. You just want to have a placeholder.
+But sometimes you don't have a concrete value just yet, or the value is not an object. Maybe you just want to have a placeholder.
+
 You can do that using an `InjectionToken`:
 
 ```typescript
 export CarColor = new InjectionToken('color')
+
 export class ElectricCar {
   @Inject(CarColor) color: string;
+
+  // or
+
+  get color() {
+    return inject(CarColor);
+  }
 }
 ```
 
-But who is gonna provide the `CarColor`, you may ask?
-Well, you can declare a provider for it:
+But who is gonna provide the `CarColor`? You can declare a provider for it:
 
 ```typescript
 import { INJECTOR } from '@homebots/injector';
 
 INJECTOR.provide(CarColor, { factory: () => 'blue' });
+
+// or
+
+provide(CarColor, { factory: () => 'blue' });
 ```
 
 You can also replace the implementation of classes:

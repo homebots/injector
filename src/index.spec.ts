@@ -15,6 +15,8 @@ import {
   TreeInjector,
   Injector,
   Value,
+  inject,
+  provide
 } from './index';
 
 describe('Injector', () => {
@@ -35,11 +37,13 @@ describe('Injector', () => {
   it('should return an instance of an associated type for a class', () => {
     class Class {}
     class AssociatedClass {}
-    INJECTOR.provide(Class, AssociatedClass);
+    provide(Class, AssociatedClass);
 
     expect(INJECTOR.get(Class) instanceof AssociatedClass).toBe(true);
     expect(INJECTOR.has(Class)).toBe(true);
     expect(INJECTOR.has(AssociatedClass)).toBe(false);
+
+    expect(inject(Class) instanceof AssociatedClass).toBe(true);
   });
 
   it('should use the concrete type associated with an InjectionToken', () => {
