@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import {
   createInjection,
-  Factory,
   getInjectorOf,
   getTypeOfProperty,
+  Factory,
+  Value,
   Inject,
   Injectable,
   InjectionToken,
@@ -12,17 +13,16 @@ import {
   isFactory,
   Provider,
   setInjectorOf,
-  TreeInjector,
   Injector,
-  Value,
+  TreeInjector,
   inject,
   provide
 } from './index';
 
 describe('Injector', () => {
-  it('should throw an error', () => {
+  it('should throw an error when trying to inject an invalid token', () => {
     expect(INJECTOR instanceof Injector).toBe(true);
-    expect(() => INJECTOR.get(null)).toThrow();
+    expect(() => INJECTOR.get(null as any)).toThrow();
   });
 
   it('should return an instance of a class', () => {
@@ -49,12 +49,18 @@ describe('Injector', () => {
   it('should use the concrete type associated with an InjectionToken', () => {
     const abstractType = new InjectionToken();
     const typeNotProvided = new InjectionToken();
+    const undefinedValue = new InjectionToken('undefined');
     class Class {}
 
     INJECTOR.provide(abstractType, Class);
+    INJECTOR.provide(undefinedValue, Value(undefined));
+
     expect(INJECTOR.get(abstractType) instanceof Class).toBe(true);
     expect(INJECTOR.has(abstractType)).toBe(true);
+
     expect(INJECTOR.has(typeNotProvided)).toBe(false);
+
+    expect(INJECTOR.get(undefinedValue)).toBe(undefined);
   });
 
   it('should use the factory function associated with an InjectionToken', () => {
@@ -131,6 +137,22 @@ describe('Injector', () => {
     expect(INJECTOR.canProvide(Token)).toBe(true);
     expect(INJECTOR.canProvide(NumberToken)).toBe(true);
   });
+
+  it('should allow multiple instances of the same provider, bypassing cache', () => {
+    class Test {
+      id = Math.random();
+    }
+
+    expect(INJECTOR.canProvide(Test)).toBe(false);
+    INJECTOR.provide(Test);
+
+    const first = INJECTOR.createNew(Test);
+    const second = INJECTOR.createNew(Test);
+
+    expect(first instanceof Test).toBe(true);
+    expect(second instanceof Test).toBe(true);
+    expect(first.id).not.toBe(second.id);
+  });
 });
 
 describe('TreeInjector', () => {
@@ -182,7 +204,7 @@ describe('TreeInjector', () => {
     expect(level3 === getInjectorOf(class3)).toBe(true);
   });
 
-  it('should allow multiple copies of a token', () => {
+  it('should allow multiple copies of a token if provided by different injectors', () => {
     class Class {}
     const injector = new TreeInjector();
     const fork = injector.fork();
@@ -191,7 +213,6 @@ describe('TreeInjector', () => {
     fork.provide(Class);
 
     expect(injector.has(Class)).toBe(false);
-    expect(injector.get(Class)).not.toBe(undefined);
     expect(injector.get(Class) === fork.get(Class)).toBe(false);
     expect(injector.canProvide(Class)).toBe(true);
     expect(fork.canProvide(Class)).toBe(true);

@@ -18,8 +18,16 @@ export class Injector {
   protected cache = new Map();
   protected providers = new Map<InjectableType, Factory | Class>();
 
-  get<T>(token: InjectableType<T>): T | null {
-    return this.getFromCache(token) || this.getFromProvider(token) || this.throwNotFound(token);
+  get<T>(token: InjectableType<T>): T {
+    if (this.canProvide(token)) {
+      return this.getFromCache(token) || this.getFromProviderAndCache(token);
+    }
+
+    this.throwNotFound(token);
+  }
+
+  createNew<T>(token: InjectableType<T>): T {
+    return this.getFromProvider(token) || this.throwNotFound(token);
   }
 
   has<T>(token: InjectableType<T>): boolean {
@@ -54,16 +62,23 @@ export class Injector {
     });
   }
 
-  protected getFromCache<T>(token: InjectableType<T>) {
+  protected getFromCache<T>(token: InjectableType<T>): T | undefined {
     if (this.cache.has(token)) {
-      return this.cache.get(token) as T;
+      return this.cache.get(token);
     }
   }
 
-  protected getFromProvider<T>(token: InjectableType<T>) {
+  protected getFromProvider<T>(token: InjectableType<T>): T | undefined {
     if (this.providers.has(token)) {
-      return this.fromProvider(token) as T;
+      return this.fromProvider(token);
     }
+  }
+
+  protected getFromProviderAndCache<T>(token: InjectableType<T>): T | undefined {
+    const value: T = this.getFromProvider(token);
+    this.cache.set(token, value);
+
+    return value;
   }
 
   protected throwNotFound(token: InjectableType<any>): null {
@@ -74,16 +89,13 @@ export class Injector {
     const provider: Class<T> | Factory<T> = this.providers.get(token);
 
     if (isConstructor<T>(provider)) {
-      const value = this.fromConstructor(provider);
-      this.cache.set(token, value);
-
-      return value;
+      return this.fromConstructor(provider);
     }
 
     return this.fromFactory(token, provider);
   }
 
-  private fromFactory<T>(token: InjectableType<T>, provider: Factory<T>): T {
+  protected fromFactory<T>(token: InjectableType<T>, provider: Factory<T>): T {
     if (cycleStack.includes(token)) {
       const cycle = cycleStack.map(getNameOfInjectable).join(' <- ');
       cycleStack.length = 0;
@@ -93,13 +105,12 @@ export class Injector {
     cycleStack.push(token);
     const dependencies = (provider.dependencies || []).map((token) => this.get(token));
     const value = provider.factory.apply(null, dependencies);
-    this.cache.set(token, value);
     cycleStack.pop();
 
     return value;
   }
 
-  private fromConstructor<T>(Constructor: Class<T>) {
+  protected fromConstructor<T>(Constructor: Class<T>) {
     const value = new Constructor();
     setInjectorOf(value, this);
 
@@ -118,8 +129,8 @@ export class TreeInjector extends Injector {
     return new TreeInjector(this);
   }
 
-  get<T>(token: InjectableType<T>): T | null {
-    return this.getFromCache(token) || this.getFromProvider(token) || this.getFromParent(token);
+  get<T>(token: InjectableType<T>): T {
+    return this.getFromCache(token) || this.getFromProviderAndCache(token) || this.getFromParent(token);
   }
 
   canProvide<T>(token: InjectableType<T>): boolean {
@@ -150,7 +161,7 @@ export function setInjectorOf(target: any, injector: Injector): void {
 }
 
 export function Factory<T>(factory: (...deps: any[]) => T, dependencies?: InjectableType[]): Factory<T> {
-  return { factory: factory, dependencies };
+  return { factory, dependencies };
 }
 
 export function Value<T>(value: T): Factory<T> {
@@ -165,8 +176,5 @@ function getNameOfInjectable(token: InjectableType) {
   return String(token);
 }
 
-export function inject<T>(token: InjectableType<T>): T | null {
-  return INJECTOR.get(token);
-}
-
+export const inject = INJECTOR.get.bind(INJECTOR) as Injector['get'];
 export const provide = INJECTOR.provide.bind(INJECTOR) as Injector['provide'];
