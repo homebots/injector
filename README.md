@@ -43,7 +43,7 @@ You can do that using an `InjectionToken`:
 ```typescript
 import { Injector, InjectionToken } from '@homebots/injector';
 
-export CarColor = new InjectionToken<string>('color');
+export const CarColor = new InjectionToken<string>('color');
 
 export class ElectricCar {
   @Inject(CarColor) color: string;
@@ -87,7 +87,7 @@ class Car {
 ## Examples
 
 ```typescript
-import { Injector } from '@homebots/injector';
+import { Injector, TreeInjector, Value, Inject, InjectionToken } from '@homebots/injector';
 
 const Color = new InjectionToken('color');
 class Battery {}
@@ -127,6 +127,9 @@ expect(electricCar.color).toBe('black');
 ```
 
 ## API
+
+[![](https://mermaid.ink/img/pako:eNptUsluwjAQ_RVrxAEk8gNRL0jtoZcWCY6-TOxJcPESOQ4VUP69JkudQH3x6G22Z3wF4SRBDkJj07wqrDwabllc7_aLRHCevfxkGdt7ohHhtld0nqS79ujMW2lXoF4kZnc2hdNMWRUUanWhCZeqisIY8VkuVwuWjh4lzaPk5JQcbzZkLFdsnwDhCQN90PccPmATgcI5TTix196dlKRI9cEP-EbrJ0qg3f65ngL76tZv0wZOW_tvE7MaPdmQmNL54_0Rs5l06bAGQ96gknGmXRaHcCBDHPJYSvRHDtzedW0tYzvepIpuyEvUDa0B2-B2ZysgD76lUTT8i0F1-wWDw6yC)](https://mermaid.live/edit#pako:eNptUsluwjAQ_RVrxAEk8gNRL0jtoZcWCY6-TOxJcPESOQ4VUP69JkudQH3x6G22Z3wF4SRBDkJj07wqrDwabllc7_aLRHCevfxkGdt7ohHhtld0nqS79ujMW2lXoF4kZnc2hdNMWRUUanWhCZeqisIY8VkuVwuWjh4lzaPk5JQcbzZkLFdsnwDhCQN90PccPmATgcI5TTix196dlKRI9cEP-EbrJ0qg3f65ngL76tZv0wZOW_tvE7MaPdmQmNL54_0Rs5l06bAGQ96gknGmXRaHcCBDHPJYSvRHDtzedW0tYzvepIpuyEvUDa0B2-B2ZysgD76lUTT8i0F1-wWDw6yC)
+
 
 ### Injector
 
@@ -172,10 +175,10 @@ const T = new InjectionToken<number>();
 
 injector.provide(C, Value(3));
 
-injector.provide(T, {
-  Factory((a: A, b: B, c: number) => a.number + b.number + c),
+injector.provide(T, Factory(
+  (a: A, b: B, c: number) => a.number + b.number + c,
   [A, B, C]
-);
+));
 
 expect(injector.get(T)).toBe(6);
 ```
