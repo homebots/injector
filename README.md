@@ -4,7 +4,7 @@ Depedency Injection library for any project, written in Typescript
 
 ## Introduction
 
-The library exports a "global" injector, which can be used as-is to inject everything. It's called `INJECTOR`. You can pair that with the "inject" function exported in the library.
+The library exports a "global" injector, which can be used as-is to inject everything. It's called `Injector.global`. You can pair that with the "inject" function exported in the library.
 
 But if you need to nest injectors and have a tree of dependencies, use `TreeInjector` instead.
 
@@ -12,7 +12,7 @@ But if you need to nest injectors and have a tree of dependencies, use `TreeInje
 
 There are two ways of using injections:
 
-- using a global injector: the library exports `INJECTOR`, a singleton object that can be accessed from anywhere and used as the injector of an entire app.
+- using a global injector: the library exports `Injector.global`, a singleton object that can be accessed from anywhere and used as the injector of an entire app.
 
 - using a tree of injector with the ability to override classes/tokens on each level.
   The library exports a class, `TreeInjector`, which can be instantiated as a starting point, and forked as needed to create children. See documentation below for more details.
@@ -41,7 +41,9 @@ But sometimes you don't have a concrete value just yet, or the value is not an o
 You can do that using an `InjectionToken`:
 
 ```typescript
-export CarColor = new InjectionToken('color')
+import { Injector, InjectionToken } from '@homebots/injector';
+
+export CarColor = new InjectionToken<string>('color');
 
 export class ElectricCar {
   @Inject(CarColor) color: string;
@@ -57,28 +59,28 @@ export class ElectricCar {
 But who is gonna provide the `CarColor`? You can declare a provider for it:
 
 ```typescript
-import { INJECTOR } from '@homebots/injector';
+import { Injector, Value } from '@homebots/injector';
 
-INJECTOR.provide(CarColor, { factory: () => 'blue' });
+Injector.global.provide(CarColor, Value('blue') });
 
 // or
 
-provide(CarColor, { factory: () => 'blue' });
+provide(CarColor, Value('blue') });
 ```
 
 You can also replace the implementation of classes:
 
 ```typescript
-import { INJECTOR } from '@homebots/injector';
+import { Injector, provide } from '@homebots/injector';
 
 class Motor {}
 class ElectricMotor {}
 
-INJECTOR.provide(Motor, ElectricMotor);
+provide(Motor, ElectricMotor);
 
 class Car {
   // 'motor' will have an instance of ElectricMotor
-  @Inject(Motor) motor: Motor;
+  @Inject() motor: Motor;
 }
 ```
 
@@ -104,7 +106,7 @@ class Car {
 
 // common injector for all cars
 const baseInjector = new TreeInjector();
-baseInjector.provide(Color, { factory: () => 'black' });
+baseInjector.provide(Color, Value('black'));
 
 // branch off to provide electric car dependencies
 const electricCarInjector = baseInjector.fork();
@@ -131,6 +133,12 @@ expect(electricCar.color).toBe('black');
 - **get(token)**
 
 Retrieves a value for a given injectable token. The token can be either a `Class` or a `InjectionToken`.
+Values are cached once they are resolved, so constructors and factories will be singleton.
+
+- **createNew(token)**
+
+Retrieves a value for a given injectable token. The token can be either a `Class` or a `InjectionToken`.
+Values are never cached.
 
 - **has(token)**
 
@@ -148,23 +156,28 @@ Checks if a token can be provided by this injector. It differs from `has()` beca
 
 Declares an injectable type.
 
-`factory` is an object which needs to have a property, called "factory", that when called returns a value for a token.
-The factory function can inject other dependencies, declared in the same object with the name "dependencies", which should be an array containing Class or InjectionToken.
+`factory` is a function that returns a value.
+
+It can be a static value, in which case the `Value` wrapper should be used
+
+It can also be dynamic value. For that case, pass a function to `Factory`, and optionally an array of dependencies.
 
 Example:
 
 ```typescript
-class A {}
-class B {}
-const C = new InjectionToken();
-const T = new InjectionToken();
+class A { number = 1 }
+class B { number = 2 }
+const C = new InjectionToken<number>();
+const T = new InjectionToken<number>();
 
-injector.provide(C, { factory: () => 1 });
+injector.provide(C, Value(3));
 
 injector.provide(T, {
-  factory: (a: A, b: B, c: number) => c,
-  dependencies: [A, B, C],
-});
+  Factory((a: A, b: B, c: number) => a.number + b.number + c),
+  [A, B, C]
+);
+
+expect(injector.get(T)).toBe(6);
 ```
 
 ### TreeInjector

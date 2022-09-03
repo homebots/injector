@@ -1,6 +1,6 @@
 /// <reference types="reflect-metadata" />
 
-import { getInjectorOf, INJECTOR } from './injector';
+import { Injector } from './injector';
 import { Class, InjectableType, Type } from './types';
 
 export function getTypeOfProperty(target: any, property: any) {
@@ -23,16 +23,16 @@ function createGetter<T>(target: any, property: any, type?: InjectableType<T>) {
       throw new Error('No type found for property ' + property);
     }
 
-    const injector = getInjectorOf(this);
+    const injector = Injector.getInjectorOf(this);
     const value: T = injector.get(type);
 
     return value;
   };
 }
 
-export function Injectable<T>(type?: Type<T>) {
+export function Injectable<T>(type?: Type<T> | null, injector: Injector = Injector.global) {
   return function (target: Class<T>) {
-    INJECTOR.provide(type || target, target);
+    injector.provide(type || target, target);
   };
 }
 

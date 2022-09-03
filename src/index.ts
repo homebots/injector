@@ -14,7 +14,6 @@ export {
 } from './types';
 
 export {
-  INJECTOR,
   Injector,
   TreeInjector,
   Value,

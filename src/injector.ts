@@ -11,7 +11,9 @@ import {
   Provider,
 } from './types';
 
+const injector = Symbol('injector');
 const injectorMetadataKey = Symbol('injector');
+const initialize = Symbol('@@initialize');
 const cycleStack: any = [];
 
 export class Injector {
@@ -114,14 +116,40 @@ export class Injector {
     const value = new Constructor();
     setInjectorOf(value, this);
 
+    if (value[initialize]) {
+      value[initialize]();
+    }
+
     return value;
+  }
+
+  static get initialize() {
+    return initialize;
+  }
+
+  static get global(): Injector {
+    if (!Injector[injector]) {
+      Injector[injector] = new Injector();
+    }
+
+    return Injector[injector];
+  }
+
+  static getInjectorOf(target: any): Injector | null {
+    if (target && typeof target === 'object') {
+      return Reflect.getOwnMetadata(injectorMetadataKey, target) || null;
+    }
+
+    return null;
+  }
+
+  static setInjectorOf(target: any, injector: Injector): void {
+    Reflect.defineMetadata(injectorMetadataKey, injector, target);
   }
 }
 
-export const INJECTOR = new Injector();
-
 export class TreeInjector extends Injector {
-  constructor(protected parent: Injector = INJECTOR) {
+  constructor(protected parent: Injector = Injector.global) {
     super();
   }
 
@@ -148,18 +176,6 @@ export class TreeInjector extends Injector {
   }
 }
 
-export function getInjectorOf(target: any): Injector | null {
-  if (target && typeof target === 'object') {
-    return Reflect.getOwnMetadata(injectorMetadataKey, target) || null;
-  }
-
-  return null;
-}
-
-export function setInjectorOf(target: any, injector: Injector): void {
-  Reflect.defineMetadata(injectorMetadataKey, injector, target);
-}
-
 export function Factory<T>(factory: (...deps: any[]) => T, dependencies?: InjectableType[]): Factory<T> {
   return { factory, dependencies };
 }
@@ -176,5 +192,9 @@ function getNameOfInjectable(token: InjectableType) {
   return String(token);
 }
 
+const INJECTOR = Injector.global;
+
+export const setInjectorOf = Injector.setInjectorOf;
+export const getInjectorOf = Injector.getInjectorOf;
 export const inject = INJECTOR.get.bind(INJECTOR) as Injector['get'];
 export const provide = INJECTOR.provide.bind(INJECTOR) as Injector['provide'];

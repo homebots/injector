@@ -8,7 +8,6 @@ import {
   Inject,
   Injectable,
   InjectionToken,
-  INJECTOR,
   isConstructor,
   isFactory,
   Provider,
@@ -16,8 +15,10 @@ import {
   Injector,
   TreeInjector,
   inject,
-  provide
+  provide,
 } from './index';
+
+const INJECTOR = Injector.global;
 
 describe('Injector', () => {
   it('should throw an error when trying to inject an invalid token', () => {
@@ -61,6 +62,19 @@ describe('Injector', () => {
     expect(INJECTOR.has(typeNotProvided)).toBe(false);
 
     expect(INJECTOR.get(undefinedValue)).toBe(undefined);
+  });
+
+  it('should call an initialization method of a class', () => {
+    @Injectable()
+    class Initializable {
+      number = 0;
+      
+      [Injector.initialize]() {
+        this.number = 42;
+      }
+    }
+
+    expect(Injector.global.get(Initializable).number).toBe(42);
   });
 
   it('should use the factory function associated with an InjectionToken', () => {
@@ -351,6 +365,15 @@ describe('@Injectable', () => {
     @Injectable()
     class InjectableClass {}
     expect(INJECTOR.get(InjectableClass) instanceof InjectableClass).toBe(true);
+  });
+
+  it('should allow a class to be injected by a specific injector', () => {
+    const injector = new Injector();
+    @Injectable(null, injector)
+    class InjectableClass {}
+
+    expect(INJECTOR.canProvide(InjectableClass)).toBe(false);
+    expect(injector.canProvide(InjectableClass)).toBe(true);
   });
 });
 
