@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   build:
-    uses: homebots/elements/.github/workflows/main.yml@master
+    uses: homebots/workflows/.github/workflows/node-build-release.yml@master
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
