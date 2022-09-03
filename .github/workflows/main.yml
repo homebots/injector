@@ -5,14 +5,7 @@ on:
       - master
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build
-        run: npm ci && npm run build && npm run test
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v2.5.0
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    uses: homebots/elements/.github/workflows/main.yml@master
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
