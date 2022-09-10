@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2019",
-    "lib": ["ESNext", "DOM"],
+    "target": "esnext",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noUnusedLocals": true,
