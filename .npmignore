@@ -4,3 +4,5 @@ coverage/
 .prettierrc
 jasmine.json
 src/
+.github
+rollup.config.js

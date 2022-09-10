@@ -230,8 +230,6 @@ describe('TreeInjector', () => {
     expect(injector.get(Class) === fork.get(Class)).toBe(false);
     expect(injector.canProvide(Class)).toBe(true);
     expect(fork.canProvide(Class)).toBe(true);
-
-    const nullParent = new TreeInjector(undefined);
   });
 });
 
