@@ -21,6 +21,10 @@ export class Injector {
   protected providers = new Map<InjectableType, Factory | Class>();
 
   get<T>(token: InjectableType<T>): T {
+    if (token === Injector) {
+      return this as unknown as T;
+    }
+
     if (this.canProvide(token)) {
       return this.getFromCache(token) || this.getFromProviderAndCache(token);
     }
@@ -158,6 +162,10 @@ export class TreeInjector extends Injector {
   }
 
   get<T>(token: InjectableType<T>): T {
+    if (token === TreeInjector) {
+      return this as unknown as T;
+    }
+
     return this.getFromCache(token) || this.getFromProviderAndCache(token) || this.getFromParent(token);
   }
 

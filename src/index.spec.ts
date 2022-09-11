@@ -26,6 +26,10 @@ describe('Injector', () => {
     expect(() => INJECTOR.get(null as any)).toThrow();
   });
 
+  it('should return itself', () => {
+    expect(INJECTOR.get(Injector)).toBe(INJECTOR);
+  });
+
   it('should return an instance of a class', () => {
     class Class {}
     INJECTOR.provide(Class);
@@ -194,6 +198,14 @@ describe('TreeInjector', () => {
     expect(level2.has(Class)).toBe(false);
 
     expect(level2.get(Class) === INJECTOR.get(Class)).toBe(true);
+  });
+
+  it('should return itself', () => {
+    const level1 = new TreeInjector();
+    const level2 = level1.fork();
+
+    expect(level2.get(TreeInjector)).toBe(level2);
+    expect(level2.get(Injector)).toBe(INJECTOR);
   });
 
   it('should associate a injector that provides a class to its instance', () => {
