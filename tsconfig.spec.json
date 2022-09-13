@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "es2019",
     "lib": ["ESNext", "DOM"],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
