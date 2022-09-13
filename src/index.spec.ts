@@ -81,6 +81,23 @@ describe('Injector', () => {
     expect(Injector.global.get(Initializable).number).toBe(42);
   });
 
+  it('should work with injections used in constructors', () => {
+    @Injectable()
+    class Foo {}
+
+    @Injectable()
+    class TestClass {
+      @Inject() foo: Foo;
+
+      constructor(public name = '') {
+        expect(this.foo).not.toBeFalsy();
+      }
+    }
+
+    expect(() => INJECTOR.get(TestClass)).not.toThrow();
+    expect(INJECTOR.get(TestClass).foo instanceof Foo).toBe(true);
+  });
+
   it('should use the factory function associated with an InjectionToken', () => {
     const abstractType = new InjectionToken();
     const numberFactory = {

@@ -9,7 +9,7 @@ export function getTypeOfProperty(target: any, property: any) {
 
 export function createInjection<T>(target: any, property: any, type: InjectableType<T>) {
   Object.defineProperty(target, property, {
-    configurable: false,
+    configurable: true,
     enumerable: false,
     get: createGetter(target, property, type),
   });
@@ -24,7 +24,11 @@ function createGetter<T>(target: any, property: any, type?: InjectableType<T>) {
     }
 
     const injector = Injector.getInjectorOf(this);
-    const value: T = injector.get(type);
+    const value: T = injector && injector.get(type);
+
+    if (value !== undefined && value !== null) {
+      Object.defineProperty(this, property, { configurable: false, enumerable: false, value });
+    }
 
     return value;
   };

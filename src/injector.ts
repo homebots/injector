@@ -16,6 +16,8 @@ const injectorMetadataKey = Symbol('injector');
 const initialize = Symbol('@@initialize');
 const cycleStack: any = [];
 
+let currentInjector: null | Injector = null;
+
 export class Injector {
   protected cache = new Map();
   protected providers = new Map<InjectableType, Factory | Class>();
@@ -81,10 +83,12 @@ export class Injector {
   }
 
   protected getFromProviderAndCache<T>(token: InjectableType<T>): T | undefined {
-    const value: T = this.getFromProvider(token);
-    this.cache.set(token, value);
+    if (this.providers.has(token)) {
+      const value: T = this.getFromProvider(token);
+      this.cache.set(token, value);
 
-    return value;
+      return value;
+    }
   }
 
   protected throwNotFound(token: InjectableType<any>): null {
@@ -117,8 +121,10 @@ export class Injector {
   }
 
   protected fromConstructor<T>(Constructor: Class<T>) {
+    currentInjector = this;
     const value = new Constructor();
     setInjectorOf(value, this);
+    currentInjector = null;
 
     if (value[initialize]) {
       value[initialize]();
@@ -141,7 +147,7 @@ export class Injector {
 
   static getInjectorOf(target: any): Injector | null {
     if (target && typeof target === 'object') {
-      return Reflect.getOwnMetadata(injectorMetadataKey, target) || null;
+      return Reflect.getOwnMetadata(injectorMetadataKey, target) || currentInjector || null;
     }
 
     return null;
